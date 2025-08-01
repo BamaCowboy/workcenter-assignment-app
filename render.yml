@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: workcenter-assignment-app
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    autoDeploy: true
