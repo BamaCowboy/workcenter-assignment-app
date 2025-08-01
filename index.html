@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Work Center Assignment</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    h2 { margin-top: 30px; }
+    label, select, button { display: block; width: 100%; margin-top: 10px; }
+    select, button { padding: 10px; }
+    .result { margin-top: 20px; background: #f0f0f0; padding: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Assign Employees to Work Centers</h1>
+
+  <label for="department">Select Department:</label>
+  <select id="department">
+    <option value="">-- Select Department --</option>
+  </select>
+
+  <label for="workCenter">Select Work Center:</label>
+  <select id="workCenter">
+    <option value="">-- Select Work Center --</option>
+  </select>
+
+  <label for="employee">Select Employee:</label>
+  <select id="employee">
+    <option value="">-- Select Employee --</option>
+  </select>
+
+  <button onclick="assignEmployee()">Assign</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    const data = {
+      "Manufacturing": {
+        workCenters: ["WC-101", "WC-102"],
+        employees: ["Alice", "Bob"]
+      },
+      "Packaging": {
+        workCenters: ["WC-201", "WC-202"],
+        employees: ["Charlie", "Diana"]
+      },
+      "Logistics": {
+        workCenters: ["WC-301", "WC-302"],
+        employees: ["Ethan", "Fiona"]
+      }
+    };
+
+    const assignments = [];
+
+    const departmentSelect = document.getElementById('department');
+    const workCenterSelect = document.getElementById('workCenter');
+    const employeeSelect = document.getElementById('employee');
+    const resultDiv = document.getElementById('result');
+
+    Object.keys(data).forEach(dept => {
+      const option = document.createElement('option');
+      option.value = dept;
+      option.textContent = dept;
+      departmentSelect.appendChild(option);
+    });
+
+    departmentSelect.addEventListener('change', () => {
+      const dept = departmentSelect.value;
+
+      workCenterSelect.innerHTML = '<option value="">-- Select Work Center --</option>';
+      employeeSelect.innerHTML = '<option value="">-- Select Employee --</option>';
+
+      if (dept && data[dept]) {
+        data[dept].workCenters.forEach(wc => {
+          const option = document.createElement('option');
+          option.value = wc;
+          option.textContent = wc;
+          workCenterSelect.appendChild(option);
+        });
+        data[dept].employees.forEach(emp => {
+          const option = document.createElement('option');
+          option.value = emp;
+          option.textContent = emp;
+          employeeSelect.appendChild(option);
+        });
+      }
+    });
+
+    function assignEmployee() {
+      const dept = departmentSelect.value;
+      const workCenter = workCenterSelect.value;
+      const employee = employeeSelect.value;
+
+      if (!dept || !workCenter || !employee) {
+        resultDiv.textContent = 'Please select all fields before assigning.';
+        return;
+      }
+
+      const assignment = {
+        department: dept,
+        workCenter: workCenter,
+        employee: employee,
+        timestamp: new Date().toLocaleString()
+      };
+
+      assignments.push(assignment);
+
+      resultDiv.innerHTML = `
+        <p><strong>Assignment successful!</strong></p>
+        <p>${employee} has been assigned to ${workCenter} in ${dept} department.</p>
+        <h2>All Assignments:</h2>
+        <ul>
+          ${assignments.map(a => `<li>${a.timestamp}: ${a.employee} → ${a.workCenter} (${a.department})</li>`).join('')}
+        </ul>
+      `;
+
+      fetch('/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(assignment)
+      })
+      .then(response => response.text())
+      .then(data => console.log('Server response:', data))
+      .catch(error => console.error('Error sending to server:', error));
+    }
+  </script>
+</body>
+</html>
